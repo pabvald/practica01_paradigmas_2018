@@ -8,25 +8,33 @@ class Celda:
            y conteniendo o no una mina según el parámetro
           c.
         """
-        self.opened = False
-        self.marked= False
-        self.mine = True if c == '*' else False
-        self.n = None
-        
-    def isMarked(self):
-        return self.marked
-  
-    def isOpened(self):
-        return self.opened
-    
-    def isClosed(self):
-        return not self.opened
-    
-    def hasMine(self):
-        return self.mine
+        self._opened = False
+        self._marked= False
+        self._mine = True if c == '*' else False
+        self._n = None
 
-    def setN(self,n):
-        self.n = n
+    @property  
+    def marked(self):
+        return self._marked
+
+    @property
+    def opened(self):
+        return self._opened
+    
+    def closed(self):
+        return not self._opened
+    
+    @property
+    def mine(self):
+        return self._mine
+
+    @property
+    def n(self):
+        return self._n
+    
+    @n.setter
+    def n(self,value):
+        self._n = value
     
     def getChar(self):
         """
