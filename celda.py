@@ -17,12 +17,17 @@ class Celda:
     def marked(self):
         return self._marked
 
+    @marked.setter
+    def marked(self,b) :
+        self._marked = b
+
     @property
     def opened(self):
         return self._opened
-    
-    def closed(self):
-        return not self._opened
+
+    @opened.setter
+    def opened(self, b):
+        self._opened = b
     
     @property
     def mine(self):
