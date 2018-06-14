@@ -41,7 +41,7 @@ class Celda:
     def n(self,value):
         self._n = value
     
-    def getChar(self):
+    def __str__(self):
         """
             Obtiene la representación de la Celda en 
             función de su estado.

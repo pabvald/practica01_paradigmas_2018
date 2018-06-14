@@ -1,6 +1,7 @@
 
 from celda import Celda
-
+from niveles import Level
+from tablero import Board
 
 
 def main():
@@ -11,21 +12,22 @@ def main():
         print("1. Principiante (9x9, 10 minas")
         print("2. Intermedio (16x16, 40 minas")
         print("3. Experto (16x30, 99 minas")
-        print("4 . Leer fichero")
+        print("4. Leer fichero")
         print("5. Salir\n")
 
         choice = input("Escoja opcion: ").replace(" ", "")
 
         if choice == "1" :
-            print(choice)
+            board = Board(None,Level.BEGINNER)
         elif choice == "2" :
-            print(choice)
+            board = Board(None,Level.MEDIUM)
         elif choice == "3" :
-            print(choice)
+            board = Board(None,Level.EXPERT)
         elif choice == "4" :
             fileName = input("Introduzca el nombre del fichero:")
             try:
                 boardStr = readBoard(fileName)
+                board = Board(boardStr,None)
             except (OSError, IOError) :
                 print("\n*** El fichero indicado no existe ***\n\n")
                 continue 
@@ -34,6 +36,9 @@ def main():
             exit()
         else :
             print("\n*** Opcion no valida ***\n\n")
+            continue
+
+        print(board)
 
 
 def readBoard(fileName) :
