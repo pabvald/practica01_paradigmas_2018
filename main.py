@@ -5,7 +5,7 @@ from tablero import Board
 
 
 def main():
-    
+
     while True :
         print("BUSCAMINAS")
         print("-"*10)
@@ -18,16 +18,16 @@ def main():
         choice = input("Escoja opcion: ").replace(" ", "")
 
         if choice == "1" :
-            board = Board(None,Level.BEGINNER)
+            board = Board(level=Level.BEGINNER)
         elif choice == "2" :
-            board = Board(None,Level.MEDIUM)
+            board = Board(level=Level.MEDIUM)
         elif choice == "3" :
-            board = Board(None,Level.EXPERT)
+            board = Board(level=Level.EXPERT)
         elif choice == "4" :
             fileName = input("Introduzca el nombre del fichero:")
             try:
                 boardStr = readBoard(fileName)
-                board = Board(boardStr,None)
+                board = Board(boardLines=boardStr)
             except (OSError, IOError) :
                 print("\n*** El fichero indicado no existe ***\n\n")
                 continue 
@@ -39,6 +39,7 @@ def main():
             continue
 
         print(board)
+        
 
 
 def readBoard(fileName) :
