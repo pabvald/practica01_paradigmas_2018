@@ -29,6 +29,10 @@ class Board :
     #Numero de minas de los tableros aleatorios
     MINES =  {'BEGINNER' : 10, 'MEDIUM' : 40,'EXPERT' : 99 }
     
+    # Posiciones de las celdas vecinas
+    ODD_ROW_AROUND = [(0,-1),(0, 1),(-1,0),(1,0),(1,-1),(-1,-1)]
+    EVEN_ROW_AROUND = [(0,-1),(0, 1),(-1,0),(1,0),(1,1),(-1,1)]
+
     #---------------------------------------------------------------------------
 
     def __init__(self, boardLines = None, level = None):
@@ -62,25 +66,48 @@ class Board :
         self._minesMarked = 0
         self._initTime = time.process_time()
         self._elapsedTime = 0
+        self.configureCells()
+
+    def configureCells(self) :
+        """ Asigna a cada celda sus celdas vecinas """
+        for i,row in enumerate(self._board) :
+            for j,cell in enumerate(row) :
+                ls = []
+                if i % 2 == 0:
+                    positions = self.EVEN_ROW_AROUND
+                else :
+                    positions = self.ODD_ROW_AROUND
+
+                for x,y in positions :
+                    if i+x in range(0,self.rows) and  j+y in range(0,self.cols):
+                            row2 = self._board[i+x]
+                            ls.append(row2[j+y])
+
+                cell.around = ls
 
     @property
     def rows(self):
+        """ Obtine el número de filas del tablero """
         return self._rows
 
     @property
     def cols(self) :
+        """ Obtiene el número de columnas del tablero """
         return self._cols
 
     @property
     def board(self) :
+        """ Obtiene la matriz del tablero """
         return self._board
 
     @property
     def minesMarked(self) :
-       return self._minesMarked
+        """ Obtiene el número de minas marcadas """
+        return self._minesMarked
     
     @property 
     def minesLeft(self) :
+        """ Obtiene el número de minas sin marcar """
         return self._minesLeft
     
     @property
@@ -112,53 +139,68 @@ class Board :
         
         self._minesLeft -= mLeft
 
-    def boardHead(self) :        
+    def boardHead(self) : 
+        """ Obtiene la cabecera del tablero donde se indica las minas sin marcar, 
+            las minas marcadas y el tiempo transcurrido  """       
         head = "MINAS RESTANTES: {} | MARCADAS: {} | TIEMPO: {:.4f} seg.\n\n" 
 
         return head.format(self.minesLeft,self.minesMarked,self.elapsedTime) 
     
-    def isMarked(self, row, col) :
-        if row < 0 or row >= self.rows :
-            return False
-        if col < 0 or col >= self.cols :
-            return False
-
-        row = self._board[row]
-        c = row[col]
-        return c.marked
-    
-    def isMined(self, row, col) :
-        if row < 0 or row >= self.rows :
-            return False
-        if col < 0 or col >= self.cols :
-            return False
-        
-        row = self._board[row]
-        c = row[col]
-        return c.mine
-
-    def n(self, row, col) :
-        # n = número de celdas vecinas con mina – número de celdas vecinas marcadas
-        mines = 0
-        marked = 0
-        defaultPositions = [(row,col-1),(row, col+1),(row-1,col),(row+1,col)]
-        evenPositions = [(row+1,col+1),(row-1,col+1)]
-        oddPositions = [(row+1,col-1),(row-1,col-1)]
-
-        for x,y in defaultPositions :
-            if self.isMarked(x,y) : marked += 1
-            if self.isMined(x,y) : mines += 1              
-
-        if row % 2 == 0:
-            extraPositions = evenPositions
+    def getCell(self, crow=None, ccol=None, coordinates=None) :
+        """ Obtiene una celda dadas su fila y su columna en formato numérico 
+            o dadas sus coordenadas en formato alfabético.   """
+        if not coordinates :
+            row = self._board[crow]
+            c = row[ccol]
+            return c
         else :
-            extraPositions = oddPositions
+            rowIndex = self.ROWS_NAMES.index(coordinates[0])
+            colIndex = self.COLS_NAMES.index(coordinates[1])
 
-        for x,y in extraPositions :
-            if self.isMarked(x,y) : marked += 1
-            if self.isMined(x,y) : mines += 1
-           
-        return mines - marked
+            row = self._board[rowIndex]
+            c = row[colIndex]
+            return c
+
+    def rightFormat(self, movement) :
+        """ Determina si un movimiento tiene un formato correcto """
+        if (len(movement) != 3 or (movement[2] != '!' and movement[2] != '*') or 
+            movement[0] not in self.ROWS_NAMES[:self.rows] or movement[1] not in self.COLS_NAMES[:self.cols]):
+            return False
+        return True
+    
+    def mark(self,cell) :
+        """ Marca una celda no marcada o desmarcar una celda ya marcada. Para 
+            poder marcar una celda debe estar cerrada y que el número de minas 
+            que quedan por marcar sea mayor que cero"""
+
+        c = self.getCell(coordinates=cell)
+        if self.minesLeft == 0 :
+            raise Exception("NO SE PUEDEN MARCAR MAS CELDAS QUE MINAS")
+        if c.opened :
+            raise Exception("NO SE PUEDE MARCAR UNA CELDA ABIERTA")
+        
+        c.marked = not c.marked
+        self._minesLeft -= 1
+
+    def open(self,cell) :
+        c = self.getCell(coordinates=cell)  
+        if c.marked :
+            raise Exception("NO SE PUEDE ABRIR UNA CELDA MARCADA")       
+        if not c.opened and c.n() > 0 :
+            raise Exception("CELDA YA ABIERTA. NO SE PUEDEN ABRIR LAS CELDAS VECINAS POR NUMERO INSUFICIENTE DE MARCAS")       
+
+    def move(self, mov) :
+        """ Determina si un movimiento tiene un formato válido y realiza
+            el marcado o la apertura de la celda correspondiente """
+        if not self.rightFormat(mov) :
+            raise Exception("ENTRADA ERRÓNEA")
+        try :
+            if mov[2] == "!" :
+                self.mark(mov[:2])
+            else :
+                self.open(mov[:2])
+        except Exception :
+            raise
 
     def __str__(self) :
         rowStr = []
@@ -173,7 +215,7 @@ class Board :
                 rowStr.append(self.ROWS_NAMES[row])
             col = 0
             for j in i :
-               rowStr.append(str(self.n(row,col)))
+               rowStr.append(str(j.n()))
                col += 1
             boardStr.append(' '.join(rowStr))
             rowStr = []

@@ -11,7 +11,7 @@ class Celda:
         self._opened = False
         self._marked= False
         self._mine = True if c == '*' else False
-        self._n = None
+        self._around = []
 
     @property  
     def marked(self):
@@ -34,13 +34,25 @@ class Celda:
         return self._mine
 
     @property
+    def around(self) :
+        return self._around
+
+    @around.setter
+    def around(self, ls) :
+        self._around = ls
+
+
     def n(self):
-        return self._n
+        mines = 0
+        marked = 0
+        if self.around == [] : return -10
+        for i in self._around :
+            if i.marked : marked += 1
+            if i.mine : mines += 1
+
+        return mines - marked          
     
-    @n.setter
-    def n(self,value):
-        self._n = value
-    
+       
     def __str__(self):
         """
             Obtiene la representación de la Celda en 
@@ -50,12 +62,12 @@ class Celda:
             return self.CSOM 
         elif not self.opened and self.marked :
             return 'X'
-        elif self.opened and self.n == 0 :
+        elif self.opened and self.n() == 0 :
             return ' '
-        elif self.opened and self.n < 0 :
+        elif self.opened and self.n() < 0 :
             return '?'
-        elif self.opened and self.n > 0:
-            return chr(self.n)
+        elif self.opened and self.n() > 0:
+            return chr(self.n())
         elif self.opened and self.marked and not self.mine :
             return '#'
         elif self.opened and not self.marked and self.mine :
