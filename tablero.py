@@ -36,7 +36,7 @@ class Board :
     #---------------------------------------------------------------------------
 
     def __init__(self, boardLines = None, level = None):
-       
+        """ Constructor."""
         if boardLines != None :
             line1 = boardLines[0].split(" ")
             rest = boardLines[1:]
@@ -66,6 +66,7 @@ class Board :
         self._minesMarked = 0
         self._initTime = time.process_time()
         self._elapsedTime = 0
+        self._ended = False
         self.configureCells()
 
     def configureCells(self) :
@@ -111,7 +112,26 @@ class Board :
         return self._minesLeft
     
     @property
+    def ended(self) :
+        """Determina si la partida ha finalizado(True) o no (False)"""
+        if self._ended : 
+            return True
+        elif self.minesLeft > 0 : 
+            print("-----Quedan minas por marcar -----")
+            return False
+        else :
+            for i,row in enumerate(self._board):
+                for j,cell in enumerate(row):
+                    if  not cell.opened and not cell.marked : 
+                        print("-----Celda cerrada y sin marcar ----- (" + str(i) + "," + str(j) + ")")
+                        return False
+            
+            print("-------Partida ganada -----")
+            return True
+
+    @property
     def elapsedTime(self) :
+        """ Obtiene el tiempo transcurrido desde que se creó el tablero """
         initTime = self._initTime
         self._initTime = time.process_time()
         self._elapsedTime = self._initTime - initTime + self._elapsedTime
@@ -121,6 +141,8 @@ class Board :
 
     @board.setter
     def board(self,level) :
+        """ Configura el tablero de forma aleatoria añadiendo el número de
+            minas correspondientes al nivel de dificultad """
         rows,cols = self.DIMENSIONS[level.name]
         mLeft = self.minesLeft
         self._board = []
@@ -171,23 +193,55 @@ class Board :
     def mark(self,cell) :
         """ Marca una celda no marcada o desmarcar una celda ya marcada. Para 
             poder marcar una celda debe estar cerrada y que el número de minas 
-            que quedan por marcar sea mayor que cero"""
+            que quedan por marcar sea mayor que cero """
 
         c = self.getCell(coordinates=cell)
+
         if self.minesLeft == 0 :
             raise Exception("NO SE PUEDEN MARCAR MAS CELDAS QUE MINAS")
         if c.opened :
             raise Exception("NO SE PUEDE MARCAR UNA CELDA ABIERTA")
         
-        c.marked = not c.marked
-        self._minesLeft -= 1
-
-    def open(self,cell) :
-        c = self.getCell(coordinates=cell)  
         if c.marked :
+            c.marked = False
+            self._minesLeft += 1
+            self._minesMarked -= 1
+        else :
+            c.marked = True
+            self._minesLeft -= 1
+            self._minesMarked += 1
+        
+    def open(self,cell) :
+        """ Abre una celda que está cerrada y sin marcar. Si la celda posee una mina la partida terminará. Si la celda
+            ya esta abierta y su 'n' es <= 0 se abren de forma recursiva sus celdas vecinas cerradas y sin marcar """
+        c = self.getCell(coordinates=cell)  
+
+        if c.marked : 
             raise Exception("NO SE PUEDE ABRIR UNA CELDA MARCADA")       
-        if not c.opened and c.n() > 0 :
+        elif not c.opened : # Cerrada
+            c.opened = True
+            if c.mine : self._ended = True
+        elif c.opened and c.n() > 0 :
             raise Exception("CELDA YA ABIERTA. NO SE PUEDEN ABRIR LAS CELDAS VECINAS POR NUMERO INSUFICIENTE DE MARCAS")       
+        elif c.opened and c.n() <= 0 :
+            for i in c.around :
+                self.openRec(i)
+
+    def openRec(self,cell) :
+        """Abre de forma recursiva las celdas cerradas y sin marcar """
+        if not cell.opened and not cell.marked :
+            cell.opened = True
+            if cell.mine :
+                self._ended = True
+            else :
+                for i in cell.around :
+                    self.openRec(i)
+
+    def openAll(self) :
+        """ Abre todas las celdas del tablero una vez la partida ha finalizado """
+        for row in self._board :
+            for cell in row :
+                cell.opened = True
 
     def move(self, mov) :
         """ Determina si un movimiento tiene un formato válido y realiza
@@ -199,10 +253,13 @@ class Board :
                 self.mark(mov[:2])
             else :
                 self.open(mov[:2])
+            
+            if self.ended : self.openAll() #Abrir todas las celdas si la partida ha acabado
         except Exception :
             raise
 
     def __str__(self) :
+        """ Obtiene una representación del tablero """
         rowStr = []
         boardStr = []
         row = 0     
@@ -215,7 +272,7 @@ class Board :
                 rowStr.append(self.ROWS_NAMES[row])
             col = 0
             for j in i :
-               rowStr.append(str(j.n()))
+               rowStr.append(str(j))
                col += 1
             boardStr.append(' '.join(rowStr))
             rowStr = []

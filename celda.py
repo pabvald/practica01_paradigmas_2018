@@ -45,7 +45,6 @@ class Celda:
     def n(self):
         mines = 0
         marked = 0
-        if self.around == [] : return -10
         for i in self._around :
             if i.marked : marked += 1
             if i.mine : mines += 1
@@ -62,14 +61,17 @@ class Celda:
             return self.CSOM 
         elif not self.opened and self.marked :
             return 'X'
+        elif self.opened and self.marked and not self.mine :
+            return '#'
+        elif self.opened and not self.marked and self.mine :
+            return '*'
         elif self.opened and self.n() == 0 :
             return ' '
         elif self.opened and self.n() < 0 :
             return '?'
         elif self.opened and self.n() > 0:
-            return chr(self.n())
-        elif self.opened and self.marked and not self.mine :
-            return '#'
-        elif self.opened and not self.marked and self.mine :
-            return '*'
+            return str(self.n())
         
+        
+
+

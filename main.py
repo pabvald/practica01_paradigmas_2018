@@ -38,7 +38,23 @@ def main():
             print("\n*** Opcion no valida ***\n\n")
             continue
 
+        play(board)
+
+def play(board) :
+    while not board.ended :
         print(board)
+        movements = input("Introduza los movimientos : ").split(",")
+
+        for mov in movements :
+            if not board.ended:
+                try :
+                    board.move(mov)
+                except Exception as e :
+                    print("\n****{}****\n".format(e))
+                    break
+
+    print(board)
+    print("\n\n**** {} ****\n\n".format("FIN DE LA PARTIDA"))
         
 
 

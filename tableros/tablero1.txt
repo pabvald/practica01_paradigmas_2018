@@ -8,3 +8,13 @@
 .*........
 .....****.
 .........*
+
+Partida fallida :
+
+Ea*,Eb*,Eg*,Fb!,Db!
+Ae*,Aj!
+
+Partida correcta:
+
+Gd*,Gb!,Ac*,De!,Hf!,Ei!,Aj!,Be!,Hg!,Fc*,Hh!,Hi!,Aa!,Ab!,
+Ba*,Cb*,Bb!,Bc!,Ca!,Cc!,Db!,Dc!,Fi!,Ea*,Ec*,Ie*,Ij!,Dj*
