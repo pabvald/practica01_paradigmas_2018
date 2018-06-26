@@ -35,28 +35,10 @@ def main():
         elif choice == "5" :
             exit()
         else :
-            print("\n*** Opcion no valida ***\n\n")
+            print("\n**** Opcion no valida ****\n\n")
             continue
 
         play(board)
-
-def play(board) :
-    while not board.ended :
-        print(board)
-        movements = input("Introduza los movimientos : ").split(",")
-
-        for mov in movements :
-            if not board.ended:
-                try :
-                    board.move(mov)
-                except Exception as e :
-                    print("\n****{}****\n".format(e))
-                    break
-
-    print(board)
-    print("\n\n**** {} ****\n\n".format("FIN DE LA PARTIDA"))
-        
-
 
 def readBoard(fileName) :
     try :
@@ -67,6 +49,27 @@ def readBoard(fileName) :
 
     return boardStr
 
+def play(board) :
+    while not board.ended :
+        print(board,"\n\n")
+        movements = input("Introduza los movimientos : ").split(",")
+
+        for mov in movements :
+            if not board.ended:
+                try :
+                    board.move(mov)
+                except Exception as e :
+                    print("\n****{}****\n".format(e))
+                    break
+
+    print(board,"\n\n")
+    
+    if board.won :
+        phrase = "ENHORABUENA, HAS GANADO LA PARTIDA"
+    else :
+        phrase = "HAS PERDIDO. PRUEBA DE NUEVO"
+
+    print("**** {} ****".format(phrase)) 
 
 if __name__ == "__main__":
     main()

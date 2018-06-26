@@ -64,9 +64,9 @@ class Board :
             self.board = level
 
         self._minesMarked = 0
-        self._initTime = time.process_time()
-        self._elapsedTime = 0
+        self._initTime = time.perf_counter()
         self._ended = False
+        self._won = False
         self.configureCells()
 
     def configureCells(self) :
@@ -116,27 +116,27 @@ class Board :
         """Determina si la partida ha finalizado(True) o no (False)"""
         if self._ended : 
             return True
-        elif self.minesLeft > 0 : 
-            print("-----Quedan minas por marcar -----")
+        elif self.minesLeft > 0 :             
             return False
         else :
-            for i,row in enumerate(self._board):
-                for j,cell in enumerate(row):
-                    if  not cell.opened and not cell.marked : 
-                        print("-----Celda cerrada y sin marcar ----- (" + str(i) + "," + str(j) + ")")
-                        return False
-            
-            print("-------Partida ganada -----")
-            return True
+            self._won = True
+            for row in self._board:
+                for cell in row:
+                    if  not cell.opened and not cell.marked :                         
+                       self._won = False
+
+            return self._won
+
+    @property
+    def won(self) :
+        """ Determina si la partida ha sido ganada """
+        return self._won
 
     @property
     def elapsedTime(self) :
         """ Obtiene el tiempo transcurrido desde que se creó el tablero """
-        initTime = self._initTime
-        self._initTime = time.process_time()
-        self._elapsedTime = self._initTime - initTime + self._elapsedTime
-
-        return self._elapsedTime
+        actualTime = time.perf_counter()
+        return  actualTime - self._initTime
 
 
     @board.setter
@@ -160,13 +160,7 @@ class Board :
             self._board.append(row)
         
         self._minesLeft -= mLeft
-
-    def boardHead(self) : 
-        """ Obtiene la cabecera del tablero donde se indica las minas sin marcar, 
-            las minas marcadas y el tiempo transcurrido  """       
-        head = "MINAS RESTANTES: {} | MARCADAS: {} | TIEMPO: {:.4f} seg.\n\n" 
-
-        return head.format(self.minesLeft,self.minesMarked,self.elapsedTime) 
+    
     
     def getCell(self, crow=None, ccol=None, coordinates=None) :
         """ Obtiene una celda dadas su fila y su columna en formato numérico 
@@ -257,6 +251,13 @@ class Board :
             if self.ended : self.openAll() #Abrir todas las celdas si la partida ha acabado
         except Exception :
             raise
+
+    def boardHead(self) : 
+        """ Obtiene la cabecera del tablero donde se indica las minas sin marcar, 
+            las minas marcadas y el tiempo transcurrido  """       
+        head = "MINAS RESTANTES: {} | MARCADAS: {} | TIEMPO: {:.4f} seg.\n\n" 
+
+        return head.format(self.minesLeft,self.minesMarked,self.elapsedTime) 
 
     def __str__(self) :
         """ Obtiene una representación del tablero """
